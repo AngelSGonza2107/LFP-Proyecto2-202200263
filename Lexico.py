@@ -14,7 +14,7 @@ def analizadorLexico(textAreaInicial, textAreaFinal):
   textAreaInicial = textAreaInicial.get("1.0", "end")
   fila = 1
   columna = 0
-  signosValidos = {".": "Punto", ",": "Coma", ":": "Dos Puntos", ";": "Punto y coma", "{": "Llave abrir", "}": "Llave cerrar", "(": "Paréntesis abrir", ")": "Paréntesis cerrar", "=": "Igual", "“": "Comillas abrir", "”": "Comillas cerrar"}
+  signosValidos = {".": "Punto", ",": "Coma", ":": "Dos Puntos", ";": "Punto y coma", "{": "Llave abrir", "}": "Llave cerrar", "(": "Paréntesis abrir", ")": "Paréntesis cerrar", "=": "Igual"}
   signosNoValidos = "!¡#%&?¿|_><`+´'^"
 
   i = 0
@@ -77,6 +77,23 @@ def analizadorLexico(textAreaInicial, textAreaFinal):
       if i < len(textAreaInicial):
         palabraAnalizar += textAreaInicial[i]
       listaLexemas.append(Lexema("Cadena", palabraAnalizar, "5", fila, columnaInicial))
+      palabraAnalizar = ""
+      columnaInicial += len(palabraAnalizar)
+      i += 1
+
+    elif char == '“':
+      palabraAnalizar += char
+      columnaInicial = columna
+      i += 1
+      while i < len(textAreaInicial) and textAreaInicial[i] != '”':
+        palabraAnalizar += textAreaInicial[i]
+        i += 1
+      if i < len(textAreaInicial):
+        palabraAnalizar += textAreaInicial[i]
+      if "{" in palabraAnalizar:
+        listaLexemas.append(Lexema("JSON", palabraAnalizar, "5", fila, columnaInicial))
+      else:
+        listaLexemas.append(Lexema("Cadena", palabraAnalizar, "5", fila, columnaInicial))
       palabraAnalizar = ""
       columnaInicial += len(palabraAnalizar)
       i += 1
@@ -147,17 +164,7 @@ def analizadorLexico(textAreaInicial, textAreaFinal):
       listaErrores.append(Error("Error Léxico", f"Carácter no válido: {char}", fila, columna))
       i += 1
 
-  if len(listaErrores) == 0:
-    pass
-  else:
-    textAreaFinal.delete("1.0", "end")
-    textAreaFinal.insert("end", "---------------- Error de compilación ----------------\n")
-    textAreaFinal.insert("end", " Lista de Errores\n")
-    textAreaFinal.insert("end", "\n")
-    numError = 1
-    for error in listaErrores:
-      textAreaFinal.insert("end", f" {numError}. {error.mensaje}, Fila: {error.fila}, Columna: {error.columna}\n")
-      numError += 1
+  analizadorSintactico(listaLexemas, listaErrores, textAreaFinal)
+  
 
   generarTablaLexemas(listaLexemas)
-  generarTablaErrores(listaErrores)

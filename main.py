@@ -4,17 +4,18 @@ from tkinter import filedialog, messagebox
 
 from Lexico import *
 
-def cargarArchivo(textArea):
+def cargarArchivo(textAreaInicial, textAreaFinal):
   archivo = filedialog.askopenfilename(filetypes=[("Archivo de texto", "*.txt")])
   if archivo:
     with open(archivo, 'r', encoding='utf-8') as f:
       contenido = f.read()
-    textArea.delete("1.0", END)
-    textArea.insert(END, contenido)
+    textAreaInicial.delete("1.0", END)
+    textAreaInicial.insert(END, contenido)
+    textAreaFinal.delete("1.0", END)
 
-def guardarTexto(textArea):
-  texto = textArea.get("1.0", "end")
-  if texto != "\n":
+def guardarTextoFinal(textAreaFinal):
+  texto = textAreaFinal.get("1.0", END).strip()
+  if texto:
     filePath = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Archivos de texto", "*.txt")])
     if filePath:
       with open(filePath, "w") as archivo:
@@ -23,6 +24,23 @@ def guardarTexto(textArea):
   else:
     messagebox.showinfo("Alerta", "¡El área de texto debe contener texto!")
 
+def botonNuevo(textAreaInicial, textAreaFinal):
+  texto = textAreaInicial.get("1.0", END).strip()
+  if texto:
+    respuesta = messagebox.askyesno("Guardar", "¿Desea guardar el archivo antes de limpiar el texto?")
+    if respuesta:
+      filePath = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Archivos de texto", "*.txt")])
+      if filePath:
+        with open(filePath, "w") as archivo:
+          archivo.write(texto)
+          textAreaFinal.delete("1.0", "end")
+    else:
+      textAreaInicial.delete("1.0", "end")
+      textAreaFinal.delete("1.0", "end")
+  else:
+    textAreaInicial.delete("1.0", "end")
+    textAreaFinal.delete("1.0", "end")
+
 def segundaVentana():
   root = Tk()
   root.title("Compilador para MongoDB")
@@ -30,9 +48,10 @@ def segundaVentana():
   frm.grid()
   textAreaInicial = Text(frm, width=55, height=30)
   textAreaInicial.grid(column=0, row=2)
-  ttk.Button(frm, text="Seleccionar archivo", command=lambda:cargarArchivo(textAreaInicial)).grid(column=0, row=0)
-  ttk.Button(frm, text="Guardar", command=lambda:guardarTexto(textAreaInicial)).grid(column=4, row=0)
+  ttk.Button(frm, text="Seleccionar archivo", command=lambda:cargarArchivo(textAreaInicial, textAreaFinal)).grid(column=0, row=0)
+  ttk.Button(frm, text="Guardar", command=lambda:guardarTextoFinal(textAreaFinal)).grid(column=4, row=0)
   ttk.Button(frm, text="Regresar", command=root.destroy).grid(column=2, row=4)
+  ttk.Button(frm, text="Nuevo", command=lambda:botonNuevo(textAreaInicial, textAreaFinal)).grid(column=2, row=0)
   ttk.Label(frm, text="").grid(column=0, row=1)
   ttk.Label(frm, text="").grid(column=0, row=3)
   ttk.Label(frm, text=" ").grid(column=1, row=2)
